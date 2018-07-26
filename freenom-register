@@ -29,7 +29,7 @@ class Freenom(object):
         return r["status"] == "AVAILABLE" and r["type"] == "FREE"
     def get_token(self, url):
         return self.session.get(url).text.split('name="token" value="',2)[1].split('"',1)[0]
-    def get_domain(self, domain):
+    def register_domain(self, domain):
         url = "https://my.freenom.com/includes/domains/confdomain-update.php"
         if not self.is_available(domain):
             raise FreenomError("Domain is not available.")
@@ -71,11 +71,14 @@ class Freenom(object):
                 continue
             payload[value.get("name")] = value.get("value")
         r = self.session.post("https://my.freenom.com/cart.php?a=checkout", payload, headers={'Host': 'my.freenom.com', 'Referer': 'https://my.freenom.com/cart.php?a=checkout'})
-        if "Your Order Number is:" in r.text:
+        if "Your Order Number is:" not in r.text:
             raise FreenomError("Registering the domain was unsuccessful. You may of been banned.")
-if len(sys.argv) != 4:
-    print("usage: freenom EMAIL PASSWORD DOMAIN")
-    exit()
-x = Freenom(sys.argv[1],sys.argv[2])
-x.login()
-x.get_domain(sys.argv[3])
+
+if __name__ == '__main__':
+
+    if len(sys.argv) != 4:
+        print("usage: freenom EMAIL PASSWORD DOMAIN")
+        exit()
+    freenom = Freenom(sys.argv[1],sys.argv[2])
+freenom.login()
+freenom.register_domain(sys.argv[3])

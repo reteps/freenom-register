@@ -70,8 +70,6 @@ class Freenom(object):
             if value.get("name") in skipValues or value.get("name") == None:
                 continue
             payload[value.get("name")] = value.get("value")
-        for key in payload:
-            print(key, payload[key])
         r = self.session.post("https://my.freenom.com/cart.php?a=checkout", payload, headers={'Host': 'my.freenom.com', 'Referer': 'https://my.freenom.com/cart.php?a=checkout'})
         if "Your Order Number is:" in r.text:
             raise FreenomError("Registering the domain was unsuccessful. You may of been banned.")

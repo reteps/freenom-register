@@ -54,15 +54,17 @@ class Freenom(object):
                 "domainns4":"ns04.freenom.com",
                 "domainns5":""
         }
-        input("this section may get you banned. Be warned.")
         r = self.session.post("https://my.freenom.com/cart.php?a=confdomains", payload, headers={'Host': 'my.freenom.com', 'Referer': 'https://my.freenom.com/cart.php?a=confdomains'})
         soup = BeautifulSoup(r.text,"lxml")
         form = soup.find("form", {"id":"mainfrm"}).findAll("input")
-        skipValues = ["accepttos","fpbb","iobb"]
+        skipValues = ["accepttos", "fpbb"]
+        # generate fpbb value with https://repl.it/repls/FamousVoluminousDesigners
+        fpbb = "0400tfefJbtE5xsNf94lis1zth5kjp6ui/+cWtQkekKVyR8+WO5tA7Jn6YfuVhgCd8ygDIKINVrQrNKlRNM4vbTYwJwRbjiPURafex1TLARybUqvwFRqyepQW4stPHxOZiJVdLDs+1JC1RHeqz7TtH33U+dEACNvUWfJFmQWppRl6Bv4pp48B2PR0LUM6Rn3JtHEfF9hXdZ4DRRiwxmZVjl9I9/GSHlRbmqB3FC5PmOztORMyPpjzYuuV+VhT2JQxvTdjNXsgMEghG0w/Sp/nxaSrvPoP5g1QwsR7BNGGqFxo7/8Iivq5JsyIM0XRTItYnO2hCiebBE66IIElXD0hEMtvQl2olrNgUNPh5iH0wK6uVK7Hlz2rUeAnePp/Vp8gaYPika5+mDohXq9f2PXvHogeO3Gk9aWzC1q6smjVLTDyc/3oU6k968Na1C/0PQwVK9AfF9hXdZ4DRRkrbXWcoCj3I1znntcmg8XIiroNPn6uMQnzqtbxtgjn55JX+F1MJDnYeTcLtcejyCxPk2UkqDvdYEYDfmfBwBYRhc3f5urJ1aotlycMEBL1IzyVekwhI5/tPvXfQEg+KLRVsDNUznM+4IlRQO86SD0OIS7LH591kg7Q92FGKueuw=="
         payload = {
                 "accepttos": "on",
-                "fpbb":"0400AY1YRP7DGIANf94lis1ztioT9A1DShgATTGvKpCeZlRwmEZ+z1fPZRcJnGLiky0W1+WpmjdizJJlHVB6chrI7oZc+cJURcFiYtBUbpa7l0FdSDvFsQ9SoXAEKkoBeycPTld6LUiJXX9c8V1ZIWK++ykzCGBlggcGImwI4pTgqhaBe3QFuxfZaUxFXRiZcQcAnPGnG3CqgLln+4KLswTyWhDAstLN4US5V97h50/5jKuksZ+gFcc8aSdlq6Ngoi5gQITTv1Udki2WMCVbBcdxP93dn6ROnupX8ydRdFuSL63vUSbJ+Ltz3R3+1lLYqHZEvPhjyQaPG3g8vtGCfhe9sg7T6v45cktLzdfxLylYBibsEVBWO8XQIqpa9NvP9z6vZG9jVzQYzT+kDxWt9wpgAUBHbtl2L6+OpyBbY5IHHW2IrukwLD3N1OUeiX6M9jR6r5XHrcXp6A2ig+YdKzGIJBDAstLN4US59PE4fRZTRwzCQai4/k8/K9DvxPQAaf/XLD4mV3TQqnyuMfbDwuRupFMpzu5bzRoTBqVHq2r3awuh/3nRbiSbHgfJ/zck+QEC91vDzq9GxxVn+WvCwoViHULgwe4ejOQ9IF9wOHABPWNq9K72wUVXedwTidneZ5WeqDQRJDWdY1eS0ikV7ewoMthejcFMJfaG0h9BYE8yDTlNMa8qkJ5mVHCYRn7PV89lFwmcYuKTLRbrGEW9zh85nee6doaAkvg88sQyiQagYnHOxQaAj6oFp9TxcGl3WwOBYDvethm0ixV1runB8PvNa5VPfVKB9sZJFnByNpqhsLzOBP1KC0Y6VQVd5JG+xf4PPRirNuv5AeJlFCwSCpg6ihLehB7yooe5X6t2xsBNqMDIx5G6nzZ9jXlFnBT3M8OkdpLBWppZ1Q1X9ZRAwWJj5kgeo+IpZLrVuZmcL034xXuFkR2vuwB6raHGv/wMldp/pbJtKxGFt63mx2vNwg2QelphjtXbnyydIHmabRYot5txeMW7J2jnJ5XpGTfpwwyCNKRgykYNiDEHc1b6+eli0Za3c3jVldoE",
-                "iobb":"",
+                "token": token,
+                "country": "US",
+                "fpbb": fpbb,
         }
         for value in form:
             if value.get("name") in skipValues or value.get("name") == None:
@@ -70,11 +72,12 @@ class Freenom(object):
             payload[value.get("name")] = value.get("value")
         for key in payload:
             print(key, payload[key])
-
         r = self.session.post("https://my.freenom.com/cart.php?a=checkout", payload, headers={'Host': 'my.freenom.com', 'Referer': 'https://my.freenom.com/cart.php?a=checkout'})
-        print(r.text)
+        if "Your Order Number is:" in r.text:
+            raise FreenomError("Registering the domain was unsuccessful. You may of been banned.")
 if len(sys.argv) != 4:
     print("usage: freenom EMAIL PASSWORD DOMAIN")
+    exit()
 x = Freenom(sys.argv[1],sys.argv[2])
 x.login()
 x.get_domain(sys.argv[3])

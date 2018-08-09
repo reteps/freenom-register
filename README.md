@@ -1,12 +1,22 @@
 # freenom-register
 
-Register a freenom domain through the command line.
+### Register a freenom domain through the command line.
 
-usage: `freenom-register EMAIL PASSWORD DOMAIN`
+### Usage
 
-for increased use, use freenom-register with fdu to fully manage your domains automatically.
+> `freenom-register EMAIL PASSWORD DOMAIN`
 
-disclaimer: I was banned multiple times while trying to create this
-tool, so use at your own risk. To be safe, I reccommend generating
-your own `fpbb` value.
+### Full Command Line Management
 
+for full management, I reccommend using maxisoft's [fdu](https://github.com/maxisoft/Freenom-dns-updater) tool to complement this.
+
+### Disclaimer
+
+One of my accounts was banned while using this tool, so be careful. This project uses the MIT license.
+
+### Want to help / Have a problem?
+
+If you would like to help, please submit a PR or Issue.
++ python3 pip package
++ integration / PR with `fdu`.
++ code restructuring.

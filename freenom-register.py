@@ -3,23 +3,27 @@
 
 import requests, sys
 from bs4 import BeautifulSoup
+
+
 class FreenomError(Exception):
     pass
+
+
 class Freenom(object):
-    def __init__(self, email, password):
-        self.email = email
-        self.password = password
+    def __init__(self):
         self.session = requests.Session()
-    def login(self):
+
+    def login(self, email, password):
         url = "https://my.freenom.com/dologin.php"
         payload = {'token': self.get_token('https://my.freenom.com/clientarea.php'),
-                    'username': self.email,
-                    'password': self.password}
+                    'username': email,
+                    'password': password}
         r = self.session.post(url, payload, headers={'Host': 'my.freenom.com', 'Referer': 'https://my.freenom.com/clientarea.php'})
         if r.status_code != 200:
             raise FreenomError(f"Could not reach {url}")
         elif 'Hello' not in r.text:
             raise FreenomError("Email or password is incorrect.")
+
     def is_available(self, domain):
         payload = {
                 'domain':domain.split(".")[0],
@@ -27,22 +31,30 @@ class Freenom(object):
         }
         r = self.session.post("https://my.freenom.com/includes/domains/fn-available.php", payload, headers={'Host': 'my.freenom.com', 'Referer': 'https://my.freenom.com/domains.php'}).json()['top_domain']
         return r["status"] == "AVAILABLE" and r["type"] == "FREE"
+
     def get_token(self, url):
         return self.session.get(url).text.split('name="token" value="',2)[1].split('"',1)[0]
+
     def register_domain(self, domain):
+        self.domain = domain
+        self.add_to_cart()
+        self.checkout()
+
+    def add_to_cart(self):
         url = "https://my.freenom.com/includes/domains/confdomain-update.php"
-        if not self.is_available(domain):
+        if not self.is_available(self.domain):
             raise FreenomError("Domain is not available.")
         payload = {
-                'domain': domain,
+                'domain': self.domain,
                 'period': '12M'
         }
         r = self.session.post(url, payload, headers={'Host': 'my.freenom.com', 'Referer': 'https://my.freenom.com/cart.php?a=confdomains'}).json()
         if r["status"] != "OK":
             raise FreenomError("Something went wrong.")
-        
+
+    def checkout(self): 
         token = self.get_token("https://my.freenom.com/cart.php?a=confdomains")
-        periodName = domain.split(".")[0] + "_" + domain.split(".")[1] + "_period"
+        periodName = self.domain.split(".")[0] + "_" + self.domain.split(".")[1] + "_period"
         payload = {
                 "token": token,
                 "update": "true",
@@ -75,10 +87,9 @@ class Freenom(object):
             raise FreenomError("Registering the domain was unsuccessful. You may of been banned.")
 
 if __name__ == '__main__':
-
     if len(sys.argv) != 4:
         print("usage: freenom EMAIL PASSWORD DOMAIN")
         exit()
-    freenom = Freenom(sys.argv[1],sys.argv[2])
-freenom.login()
-freenom.register_domain(sys.argv[3])
+    freenom = Freenom()
+    freenom.login(sys.argv[1], sys.argv[2])
+    freenom.register_domain(sys.argv[3])

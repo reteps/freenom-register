@@ -12,7 +12,7 @@ for full management, I reccommend using maxisoft's [fdu](https://github.com/maxi
 
 ### Disclaimer
 
-One of my accounts was banned while using this tool, so be careful. This project uses the MIT license.
+One of my accounts was banned while using this tool, so be careful. This project uses the MIT license. Use the link inside code to generate fpbb value to be extra cautious if wanted.
 
 ### Want to help / Have a problem?
 
